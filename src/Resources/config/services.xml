@@ -5,7 +5,16 @@
         http://symfony.com/schema/dic/services/services-1.0.xsd">
   <services>
 
+      <service id="kikwik_json_form.event_listener.json_document_doctrine_listener" class="Kikwik\JsonFormBundle\EventListener\JsonDocumentDoctrineListener">
+          <tag name="doctrine.event_listener" event="preUpdate"/>
+          <argument type="service" id="doctrine"/>
+      </service>
 
+      <service id="kikwik_json_form.event_listener.json_document_form_subscriber" class="Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber">
+          <argument type="service" id="doctrine"/>
+          <argument type="service" id="serializer"/>
+      </service>
+      <service id="Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber" alias="kikwik_json_form.event_listener.json_document_form_subscriber"/>
 
   </services>
 </container>
