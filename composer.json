@@ -1,0 +1,22 @@
+{
+    "name": "kikwik/json-form-bundle",
+    "description": "Helpers and listeners for using forms with dunglas/doctrine-json-odm",
+    "type": "symfony-bundle",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Klaus",
+            "email": "support@kikwik.it"
+        }
+    ],
+    "require": {
+        "dunglas/doctrine-json-odm": "^1.3",
+        "symfony/framework-bundle": "^5.4 || ^6.0"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kikwik\\JsonFormBundle\\": "src/"
+        }
+    }
+}
