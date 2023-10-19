@@ -12,7 +12,16 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('kikwik_json_form');
         $rootNode = $treeBuilder->getRootNode();
 
-        // TODO: add configuration
+        $treeBuilder->getRootNode()
+            ->children()
+                ->arrayNode('model_map')
+                    ->defaultValue([])
+                    ->useAttributeAsKey('type')
+                    ->scalarPrototype()
+                        ->cannotBeEmpty()
+                    ->end()
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }

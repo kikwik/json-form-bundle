@@ -17,7 +17,8 @@ class KikwikJsonFormExtension extends Extension
         $configuration = $this->getConfiguration($configs, $container);
         $config = $this->processConfiguration($configuration, $configs);
 
-        // TODO: configure services
+        $jsonDocumentCollectionType = $container->getDefinition('kikwik_json_form.form_type.json_document_collection_type');
+        $jsonDocumentCollectionType->setArgument('$modelMap', $config['model_map']);
 
     }
 

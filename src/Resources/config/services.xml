@@ -16,5 +16,10 @@
       </service>
       <service id="Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber" alias="kikwik_json_form.event_listener.json_document_form_subscriber"/>
 
+      <service id="kikwik_json_form.form_type.json_document_collection_type" class="Kikwik\JsonFormBundle\FormType\JsonDocumentCollectionType">
+          <tag name="form.type"/>
+          <argument>$modelMap</argument>
+      </service>
+
   </services>
 </container>
