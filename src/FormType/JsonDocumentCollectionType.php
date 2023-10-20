@@ -6,6 +6,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class JsonDocumentCollectionType extends AbstractType
@@ -25,29 +26,46 @@ class JsonDocumentCollectionType extends AbstractType
                 $values = [$values];
             }
 
-            foreach($values as $index => $value)
+            if(count($values))
             {
-                if(is_object($value))
+                foreach($values as $index => $value)
                 {
-                    $modelClass = get_class($value);
-                    if(isset($this->modelMap[$modelClass]))
+                    if(is_object($value))
                     {
-                        $label = $options['model_labels'][$modelClass] ?? $modelClass;
-                        $form->add($index, $this->modelMap[$modelClass], ['label'=>$label]);
-                    }
-                    else
-                    {
-                        throw new \RuntimeException(sprintf('kikwik_json_form.model_map not defined for class %s',$modelClass));
+                        $modelClass = get_class($value);
+                        $this->addModelForm($form, $index, $modelClass, $options);
                     }
                 }
             }
+            else
+            {
+                foreach($options['empty_data_models'] as $index => $modelClass)
+                {
+                    $this->addModelForm($form, $index, $modelClass, $options);
+                }
+            }
+
         });
+    }
+
+    private function addModelForm(FormInterface $form, int $index, string $modelClass, array $options)
+    {
+        if(isset($this->modelMap[$modelClass]))
+        {
+            $label = $options['model_labels'][$modelClass] ?? $modelClass;
+            $form->add($index, $this->modelMap[$modelClass], ['label'=>$label]);
+        }
+        else
+        {
+            throw new \RuntimeException(sprintf('kikwik_json_form.model_map not defined for class %s',$modelClass));
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'model_labels' => []
+            'model_labels' => [],
+            'empty_data_models' => [],
         ]);
     }
 
