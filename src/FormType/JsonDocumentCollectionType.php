@@ -21,13 +21,19 @@ class JsonDocumentCollectionType extends AbstractType
             $values = $event->getData();
             $form = $event->getForm();
 
-            if(!is_array($values))
+            if(is_array($options['data_models']))
             {
-                $values = [$values];
+                foreach($options['data_models'] as $index => $modelClass)
+                {
+                    $this->addModelForm($form, $index, $modelClass, $options);
+                }
             }
-
-            if(count($values))
+            else
             {
+                if(!is_array($values))
+                {
+                    $values = [$values];
+                }
                 foreach($values as $index => $value)
                 {
                     if(is_object($value))
@@ -37,14 +43,6 @@ class JsonDocumentCollectionType extends AbstractType
                     }
                 }
             }
-            else
-            {
-                foreach($options['empty_data_models'] as $index => $modelClass)
-                {
-                    $this->addModelForm($form, $index, $modelClass, $options);
-                }
-            }
-
         });
     }
 
@@ -65,7 +63,7 @@ class JsonDocumentCollectionType extends AbstractType
     {
         $resolver->setDefaults([
             'model_labels' => [],
-            'empty_data_models' => [],
+            'data_models' => null,
         ]);
     }
 

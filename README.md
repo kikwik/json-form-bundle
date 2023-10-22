@@ -164,3 +164,61 @@ class ProdottoFormType extends AbstractType
     }
 }
 ```
+
+To force the initial data use the `data_models` option inside a `PRE_SET_DATA` listener:
+
+```php
+namespace App\Form;
+
+use Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber;
+
+class ProdottoFormType extends AbstractType
+{
+    public function __construct(private JsonDocumentFormSubscriber $jsonDocumentFormSubscriber)
+    {
+    }
+    
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('schedaTecnica',JsonDocumentCollectionType::class, [
+                'model_labels' => [
+                    'App\Model\Costruzione' => 'Costruzione',
+                    'App\Model\Illuminazione' => 'Illuminazione',
+                ]
+            ])
+            ->addEventSubscriber($this->jsonDocumentFormSubscriber)
+        ;
+        
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
+    }
+     
+    public function onPreSetData(PreSetDataEvent $event)
+    {
+        /** @var Prodotto $prodotto */
+        $prodotto = $event->getData();
+        $form = $event->getForm();
+
+        if(!$prodotto || $prodotto->getId() == null)
+        {
+            $form->add('schedaTecnica',JsonDocumentCollectionType::class, [
+                'model_labels' => [
+                    'App\Model\Costruzione' => 'Costruzione',
+                    'App\Model\Illuminazione' => 'Illuminazione',
+                ],
+                'data_models' => [
+                    'App\Model\Costruzione',
+                    'App\Model\Illuminazione'
+                ]
+            ]);
+        }
+    } 
+     
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Prodotto::class,
+        ]);
+    }
+}
+```
