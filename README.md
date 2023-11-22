@@ -1,7 +1,7 @@
 KikwikCookieBundle
 ==================
 
-Helpers and listeners for using forms with dunglas/doctrine-json-odm
+Helpers and listeners for using forms with [dunglas/doctrine-json-odm](https://github.com/dunglas/doctrine-json-odm)
 
 
 Installation
@@ -19,64 +19,107 @@ $ composer require kikwik/json-form-bundle
 Usage
 -----
 
-To handle correctly forms that has `json_document` fields you must autowire the `JsonDocumentFormSubscriber` service
-and add to the FormBuilderInterface as event subscriber.
-
-The entity must have an `updatedAt` field that the subscriber will set to the current timme in case of one of the json_document fields has changed.
-This will force doctrine to persist the main entity.
+Suppose to have some models defined:
 
 ```php
-// the model
+// first model
 namespace App\Model;
 
-class Dimensioni
+class Dimension
 {
-    private ?string $altezza = null;
-    private ?string $larghezza = null;
+    private ?int $height = null;
+    private ?int $width = null;
     
     // getter and setter...
 }
 ```
 
 ```php
-// the model form
+// second model
+namespace App\Model;
+
+class TechData
+{
+    private ?string $someData = null;
+    private ?string $otherData = null;
+    
+    // getter and setter...
+}
+```
+
+Then you have to define a form for each model:
+
+
+```php
+// first model form
 namespace App\Form\Model;
 
-use App\Model\Dimensioni;
+use App\Model\Dimension;
 
-class DimensioniType extends AbstractType
+class DimensionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('altezza')
-            ->add('larghezza')
+            ->add('height')
+            ->add('width')
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class'=>Dimensioni::class
+            'data_class'=>Dimension::class
         ]);
     }
 }
 ```
 
 ```php
+// second model form
+namespace App\Form\Model;
+
+use App\Model\TechData;
+
+class TechDataType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('someData')
+            ->add('otherData')
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class'=>TechData::class
+        ]);
+    }
+}
+```
+
+Now you can to have an entity with some `json_document` fields defined as single model or an array of arbitrary models (the entity must have an `updatedAt` timestamp field)
+
+
+```php
 // the entity
 namespace App\Entity;
 
-use App\Model\Dimensioni;
+use App\Model\Dimension;
 
-#[ORM\Entity(repositoryClass: ProdottoRepository::class)]
-class Prodotto
+#[ORM\Entity(repositoryClass: ProductRepository::class)]
+class Product
 {    
+    #[ORM\Column(type: Types::STRING)]
+    private ?string $name = null;
+
     #[ORM\Column(type: 'json_document', nullable: true)]
-    private ?Dimensioni $dimensioni = null;
+    private ?Dimension $dimension = null;
     
     #[ORM\Column(type: 'json_document', nullable: true)]
-    private array $schedaTecnica = [];
+    private array $techData = [];
     
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     protected $updatedAt;
@@ -85,33 +128,37 @@ class Prodotto
 }
 ```
 
+To handle correctly forms that has `json_document` fields you must autowire the `JsonDocumentFormSubscriber` service
+and add to the FormBuilderInterface as event subscriber.
+
+The subscriber will set the `updatedAt` field to the current timestamp in case of one of the json_document fields has changed.
+This will force doctrine to persist the main entity.
+
 ```php
 // the entity form
 namespace App\Form;
 
 use Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber;
 
-class ProdottoFormType extends AbstractType
+class ProductFormType extends AbstractType
 {
-    public function __construct(private JsonDocumentFormSubscriber $jsonDocumentFormSubscriber)
+    public function __construct(private JsonDocumentFormSubscriber $jsonDocumentFormSubscriber) # autowire here
     {
     }
     
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('field1')
-            ->add('field2')
-            ->add('dimensioniLampada',DimensioniType::class)
-            ->add('dimensioniScatola',DimensioniType::class)
-            ->addEventSubscriber($this->jsonDocumentFormSubscriber)
+            ->add('name')
+            ->add('dimension',DimensionType::class)
+            ->addEventSubscriber($this->jsonDocumentFormSubscriber) # add as event subscriber
         ;
     }
      
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Prodotto::class,
+            'data_class' => Product::class,
         ]);
     }
 }
@@ -121,13 +168,13 @@ class ProdottoFormType extends AbstractType
 JsonDocumentCollectionType
 --------------------------
 
-Define the mapping from a model and a form in `config/packages/kikwik_json_form.yaml`:
+To handle collections of models you must define the mapping from a model to the relative form in `config/packages/kikwik_json_form.yaml`:
 
 ```yaml
 kikwik_json_form:
     model_map:
-        App\Model\Costruzione:      App\Form\Model\CostruzioneType
-        App\Model\Illuminazione:    App\Form\Model\IlluminazioneType
+        App\Model\Dimension:    App\Form\Model\DimensionType
+        App\Model\TechData:     App\Form\Model\TechDataType
 ```
 
 Then you can use the `JsonDocumentCollectionType` to store heterogeneous types of models in one field:
@@ -137,7 +184,7 @@ namespace App\Form;
 
 use Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber;
 
-class ProdottoFormType extends AbstractType
+class ProductFormType extends AbstractType
 {
     public function __construct(private JsonDocumentFormSubscriber $jsonDocumentFormSubscriber)
     {
@@ -146,10 +193,11 @@ class ProdottoFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('schedaTecnica',JsonDocumentCollectionType::class, [
+            ->add('name')
+            ->add('techData',JsonDocumentCollectionType::class, [
                 'model_labels' => [
-                    'App\Model\Costruzione' => 'Costruzione',
-                    'App\Model\Illuminazione' => 'Illuminazione',
+                    'App\Model\Dimension' => 'Size of product',
+                    'App\Model\TechData' => 'Technical data',
                 ]
             ])
             ->addEventSubscriber($this->jsonDocumentFormSubscriber)
@@ -159,7 +207,7 @@ class ProdottoFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Prodotto::class,
+            'data_class' => Product::class,
         ]);
     }
 }
@@ -172,7 +220,7 @@ namespace App\Form;
 
 use Kikwik\JsonFormBundle\EventListener\JsonDocumentFormSubscriber;
 
-class ProdottoFormType extends AbstractType
+class ProductFormType extends AbstractType
 {
     public function __construct(private JsonDocumentFormSubscriber $jsonDocumentFormSubscriber)
     {
@@ -181,10 +229,11 @@ class ProdottoFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('schedaTecnica',JsonDocumentCollectionType::class, [
+            ->add('name')
+            ->add('techData',JsonDocumentCollectionType::class, [
                 'model_labels' => [
-                    'App\Model\Costruzione' => 'Costruzione',
-                    'App\Model\Illuminazione' => 'Illuminazione',
+                    'App\Model\Dimension' => 'Size of product',
+                    'App\Model\TechData' => 'Technical data',
                 ]
             ])
             ->addEventSubscriber($this->jsonDocumentFormSubscriber)
@@ -195,20 +244,20 @@ class ProdottoFormType extends AbstractType
      
     public function onPreSetData(PreSetDataEvent $event)
     {
-        /** @var Prodotto $prodotto */
-        $prodotto = $event->getData();
+        /** @var Product $product */
+        $product = $event->getData();
         $form = $event->getForm();
 
-        if(!$prodotto || $prodotto->getId() == null)
+        if(!$product || $product->getId() == null)
         {
-            $form->add('schedaTecnica',JsonDocumentCollectionType::class, [
+            $form->add('techData',JsonDocumentCollectionType::class, [
                 'model_labels' => [
-                    'App\Model\Costruzione' => 'Costruzione',
-                    'App\Model\Illuminazione' => 'Illuminazione',
+                    'App\Model\Dimension' => 'Size of product',
+                    'App\Model\TechData' => 'Technical data',
                 ],
                 'data_models' => [
-                    'App\Model\Costruzione',
-                    'App\Model\Illuminazione'
+                    'App\Model\Dimension',
+                    'App\Model\TechData'
                 ]
             ]);
         }
@@ -217,7 +266,7 @@ class ProdottoFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Prodotto::class,
+            'data_class' => Product::class,
         ]);
     }
 }
