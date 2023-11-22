@@ -1,5 +1,5 @@
-KikwikCookieBundle
-==================
+KikwikJsonFormBundle
+====================
 
 Helpers and listeners for using forms with [dunglas/doctrine-json-odm](https://github.com/dunglas/doctrine-json-odm)
 
