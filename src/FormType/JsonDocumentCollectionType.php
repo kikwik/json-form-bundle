@@ -15,7 +15,7 @@ class JsonDocumentCollectionType extends AbstractType
     {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($options){
             $values = $event->getData();
@@ -46,7 +46,7 @@ class JsonDocumentCollectionType extends AbstractType
         });
     }
 
-    private function addModelForm(FormInterface $form, int $index, string $modelClass, array $options)
+    private function addModelForm(FormInterface $form, int $index, string $modelClass, array $options): void
     {
         if(isset($this->modelMap[$modelClass]))
         {
@@ -59,7 +59,7 @@ class JsonDocumentCollectionType extends AbstractType
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'model_labels' => [],
