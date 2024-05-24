@@ -51,7 +51,10 @@ class JsonDocumentCollectionType extends AbstractType
         if(isset($this->modelMap[$modelClass]))
         {
             $label = $options['model_labels'][$modelClass] ?? $modelClass;
-            $form->add($index, $this->modelMap[$modelClass], ['label'=>$label]);
+            $form->add($index, $this->modelMap[$modelClass], [
+                'label'=>$label,
+                'row_attr'=>['class'=>sprintf('json-document %s',str_replace('\\','-',$modelClass))]
+            ]);
         }
         else
         {
