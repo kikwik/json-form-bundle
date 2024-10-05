@@ -50,11 +50,15 @@ class JsonDocumentCollectionType extends AbstractType
     {
         if(isset($this->modelMap[$modelClass]))
         {
-            $label = $options['model_labels'][$modelClass] ?? $modelClass;
-            $form->add($index, $this->modelMap[$modelClass], [
-                'label'=>$label,
+            $modelFormOptions = [
+                'label' => $options['model_labels'][$modelClass] ?? $modelClass,
                 'row_attr'=>['class'=>sprintf('json-document %s',str_replace('\\','-',$modelClass))]
-            ]);
+            ];
+            if(isset($options['model_options'][$modelClass]))
+            {
+                $modelFormOptions = array_merge($modelFormOptions, $options['model_options'][$modelClass]);
+            }
+            $form->add($index, $this->modelMap[$modelClass], $modelFormOptions);
         }
         else
         {
@@ -67,6 +71,7 @@ class JsonDocumentCollectionType extends AbstractType
         $resolver->setDefaults([
             'model_labels' => [],
             'data_models' => null,
+            'model_options' => [],
         ]);
     }
 

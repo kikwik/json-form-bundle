@@ -198,6 +198,9 @@ class ProductFormType extends AbstractType
                 'model_labels' => [
                     'App\Model\Dimension' => 'Size of product',
                     'App\Model\TechData' => 'Technical data',
+                ],
+                'model_options' => [
+                    'App\Model\Dimension' => ['unitOfMeasurement'=>'mm'],
                 ]
             ])
             ->addEventSubscriber($this->jsonDocumentFormSubscriber)
@@ -234,6 +237,9 @@ class ProductFormType extends AbstractType
                 'model_labels' => [
                     'App\Model\Dimension' => 'Size of product',
                     'App\Model\TechData' => 'Technical data',
+                ],
+                'model_options' => [
+                    'App\Model\Dimension' => ['unitOfMeasurement'=>'mm'],
                 ]
             ])
             ->addEventSubscriber($this->jsonDocumentFormSubscriber)
@@ -254,6 +260,9 @@ class ProductFormType extends AbstractType
                 'model_labels' => [
                     'App\Model\Dimension' => 'Size of product',
                     'App\Model\TechData' => 'Technical data',
+                ],
+                'model_options' => [
+                    'App\Model\Dimension' => ['unitOfMeasurement'=>'mm'],
                 ],
                 'data_models' => [
                     'App\Model\Dimension',
